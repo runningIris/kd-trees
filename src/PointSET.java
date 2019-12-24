@@ -2,13 +2,16 @@ import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdDraw;
+
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
 public class PointSET {
 
-    private TreeSet<Point2D> allPoints;
+    final private TreeSet<Point2D> allPoints;
 
     // construct an empty set of points
     public PointSET() {
@@ -24,26 +27,29 @@ public class PointSET {
     public int size() { return allPoints.size(); }
 
     // add the point to the set (if it is not already in the set)
-    public void insert(Point2D p) { if (p != null) allPoints.add(p); }
+    public void insert(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("argument p is null in the insert method.");
+        if (!contains(p)) allPoints.add(p);
+    }
 
     // does the set contain point p?
     public boolean contains(Point2D p) {
-        if (p == null) return false;
+        if (p == null) throw new IllegalArgumentException("argument p is null in the contains method.");
         return allPoints.contains(p);
     }
 
     // draw all points to standard draw
     public void draw() {
-        for(Point2D p: allPoints) { p.draw(); }
+        for (Point2D p: allPoints) { p.draw(); }
     }
 
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
-        if (rect == null) return null;
+        if (rect == null) throw new IllegalArgumentException("argument rect is null in the range method.");
 
         List<Point2D> list = new ArrayList<Point2D>();
 
-        for(Point2D p: allPoints) {
+        for (Point2D p: allPoints) {
             if (rect.contains(p)) {
                 list.add(p);
             }
@@ -53,6 +59,7 @@ public class PointSET {
     }
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("argument p is null in the nearest method.");
 
         Point2D result = null;
         double nearest = Double.POSITIVE_INFINITY;
@@ -63,9 +70,10 @@ public class PointSET {
 
         for (Point2D other: allPoints) {
             double distance = p.distanceSquaredTo(other);
-            if (distance < nearest && distance > 0) {
+
+            if (distance < nearest) {
                 nearest = distance;
-                result = p;
+                result = other;
             }
         }
 
@@ -81,6 +89,17 @@ public class PointSET {
         while (!file.isEmpty()) {
             ps.insert(new Point2D(file.readDouble(), file.readDouble()));
         }
+
+        ps.draw();
+
+        Point2D nearest = ps.nearest(new Point2D(0, 0));
+
+        StdOut.println(nearest.toString());
+
+        StdDraw.setPenColor(Color.PINK);
+        StdDraw.setPenRadius(0.01);
+
+        nearest.draw();
 
         StdOut.println(ps.size());
     }

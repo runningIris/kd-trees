@@ -17,7 +17,7 @@ public class KdTree {
         private Node rt;
     }
 
-    private Node root;
+    final private Node root;
     private int length;
     private Point2D nearest;
     private double nearestDistance;
@@ -51,9 +51,8 @@ public class KdTree {
         }
     }
 
-    private void dfsDraw(Node node, Boolean flag) {
-        if(node.p != null) {
-            StdDraw.setPenRadius(0.005);
+    private void dfsDraw(Node node, boolean flag) {
+        if (node.p != null) {
             if (flag) {
                 StdDraw.setPenColor(Color.red);
                 double x = node.p.x();
@@ -68,7 +67,6 @@ public class KdTree {
                 StdDraw.line(xmin, y, xmax, y);
             }
 
-            StdDraw.setPenRadius(0.01);
             StdDraw.setPenColor(Color.black);
             node.p.draw();
 
@@ -101,6 +99,42 @@ public class KdTree {
         return list;
     }
 
+
+    private void dfsContains(Node node, Point2D p) {
+        if (node.p == null) return;
+
+        if (node.p.x() == p.x() && node.p.y() == p.y()) {
+            contains = true;
+        }
+
+        if (node.lb != null && node.lb.rect.contains(p)) dfsContains(node.lb, p);
+        if (node.rt != null && node.rt.rect.contains(p)) dfsContains(node.rt, p);
+    }
+
+    private void dfsNearest(Node node, Point2D p) {
+        if (node.p == null) return;
+        if (node.p.distanceSquaredTo(p) == 0) {
+            nearestDistance = 0;
+            nearest = node.p;
+            return; // 本身
+        }
+
+        double distance = node.p.distanceSquaredTo(p);
+
+        if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearest = node.p;
+        }
+
+        if (node.lb != null && nearestDistance > node.lb.rect.distanceSquaredTo(p)) {
+            dfsNearest(node.lb, p);
+        }
+
+        if (node.rt != null && nearestDistance > node.rt.rect.distanceSquaredTo(p)) {
+            dfsNearest(node.rt, p);
+        }
+    }
+
     // is the set empty?
     public boolean isEmpty() {
         return root.p == null;
@@ -111,11 +145,14 @@ public class KdTree {
 
     // add the point to the set (if it is not already in the set)
     public void insert(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("argument p is null in the insert method.");
 
-        Boolean flag = true; // 是否以 x 轴作为分界线
+        boolean flag = true; // 是否以 x 轴作为分界线
         Node node = root; // 当前节点
 
         while (node.p != null) {
+
+            if (node.p.x() == p.x() && node.p.y() == p.y()) return; // 如果存在已有节点 == p，则不插入
 
             if (flag) {
                 node = p.x() <= node.p.x() ? node.lb : node.rt; // 以 x 为分界线，沿 x 轴的左右递归
@@ -136,17 +173,11 @@ public class KdTree {
         length++;
     }
 
-    private void dfsContains(Node node, Point2D p) {
-        if (node.p.x() == node.p.y()) {
-            contains = true;
-        }
-
-        if (node.lb.rect.contains(p)) dfsContains(node.lb, p);
-        if (node.rt.rect.contains(p)) dfsContains(node.rt, p);
-    }
 
     // does the set contain point p?
     public boolean contains(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("argument p is null in the contains method.");
+
         contains = false;
         dfsContains(root, p);
         return contains;
@@ -162,33 +193,19 @@ public class KdTree {
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
         // only checks the rectangle that intersect with rect
-        if (rect == null) return null;
+        if (rect == null) throw new IllegalArgumentException("argument rect is null in the range method.");
+
         return dfsRange(root, rect);
-    }
-
-    private void dfsNearest(Node node, Point2D p) {
-        if (node.p == null) return;
-        if (node.p.distanceSquaredTo(p) == 0) return; // 排除本身
-
-        double distance = node.p.distanceSquaredTo(p);
-
-        if (distance < nearestDistance) {
-            nearestDistance = distance;
-            nearest = node.p;
-        }
-
-        if (node.lb != null && nearestDistance > node.lb.rect.distanceSquaredTo(p)) {
-            dfsNearest(node.lb, p);
-        }
-
-        if (node.rt != null && nearestDistance > node.rt.rect.distanceSquaredTo(p)) {
-            dfsNearest(node.rt, p);
-        }
     }
 
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("argument p is null in the nearest method.");
+
+        if (root.p == null) return null;
+
         nearest = root.p;
+
         nearestDistance = root.p.distanceSquaredTo(p);
 
         dfsNearest(root, p);
@@ -208,5 +225,7 @@ public class KdTree {
 
         StdOut.println(ps.size());
         ps.draw();
+
+        StdOut.println(ps.contains(new Point2D(0.7, 0.0)));
     }
 }
