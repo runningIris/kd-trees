@@ -4,7 +4,7 @@ import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,7 +83,7 @@ public class KdTree {
 
         if (!node.rect.intersects(rect)) return null;
 
-        List<Point2D> list = new ArrayList();
+        List<Point2D> list = new ArrayList<Point2D>();
 
         if (node.p != null && rect.contains(node.p)) {
             list.add(node.p);
@@ -168,20 +168,20 @@ public class KdTree {
 
     private void dfsNearest(Node node, Point2D p) {
         if (node.p == null) return;
-        if (node.p.distanceTo(p) == 0) return; // 排除本身
+        if (node.p.distanceSquaredTo(p) == 0) return; // 排除本身
 
-        double distance = node.p.distanceTo(p);
+        double distance = node.p.distanceSquaredTo(p);
 
         if (distance < nearestDistance) {
             nearestDistance = distance;
             nearest = node.p;
         }
 
-        if (node.lb != null && nearestDistance > node.lb.rect.distanceTo(p)) {
+        if (node.lb != null && nearestDistance > node.lb.rect.distanceSquaredTo(p)) {
             dfsNearest(node.lb, p);
         }
 
-        if (node.rt != null && nearestDistance > node.rt.rect.distanceTo(p)) {
+        if (node.rt != null && nearestDistance > node.rt.rect.distanceSquaredTo(p)) {
             dfsNearest(node.rt, p);
         }
     }
@@ -189,7 +189,7 @@ public class KdTree {
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
         nearest = root.p;
-        nearestDistance = root.p.distanceTo(p);
+        nearestDistance = root.p.distanceSquaredTo(p);
 
         dfsNearest(root, p);
 

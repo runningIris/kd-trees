@@ -12,7 +12,7 @@ public class PointSET {
 
     // construct an empty set of points
     public PointSET() {
-        allPoints = new TreeSet();
+        allPoints = new TreeSet<Point2D>();
     }
 
     // is the set empty?
@@ -62,7 +62,7 @@ public class PointSET {
         }
 
         for (Point2D other: allPoints) {
-            double distance = p.distanceTo(other);
+            double distance = p.distanceSquaredTo(other);
             if (distance < nearest && distance > 0) {
                 nearest = distance;
                 result = p;
